@@ -15,8 +15,10 @@ int Lattice::classify(int a)
 {
 	int b, c;
 	b = a;
+	// идем до корня - "настоящей" метки кластера
 	while (parent[b] != b)
 		b = parent[b];
+	// сжимаем путь, присваивая найденный корень в качестве родителя всем обойденным вершинам
 	while (parent[a] != a)
 	{
 		c = parent[a];
@@ -28,8 +30,11 @@ int Lattice::classify(int a)
 
 void Lattice::merge(int a, int b)
 {
+	// восстанавливаем id кластеров меток
 	int label_a = classify(a);
 	int label_b = classify(b);
+
+	// находим наименьший id среди них и присваиваем другой метке в качестве родителя, обновляем размеры
 	if (label_b < label_a)
 	{
 		parent[label_a] = label_b;
@@ -42,6 +47,7 @@ void Lattice::merge(int a, int b)
 		clusterSize[label_a] = clusterSize[label_a] + clusterSize[label_b] + 1;
 		clusterSize[label_b] = 0;
 	}
+	// если одинаковые метки, то нет нужды в объединении, сразу увеличиваем размер на 1 (вклад текущего узла)
 	else
 	{
 		clusterSize[label_a]++;
@@ -50,8 +56,8 @@ void Lattice::merge(int a, int b)
 
 void Lattice::setLabels(std::string input, std::string output)
 {
-	std::ifstream inf(input); //будем читать решетку из этого файла
-	std::ofstream outf(output); //будем записывать метки в этот файл
+	std::ifstream inf(input);
+	std::ofstream outf(output);
 
 	if (!inf)
 	{
@@ -70,11 +76,12 @@ void Lattice::setLabels(std::string input, std::string output)
 	cols = cols_;
 	outf << rows << " " << cols << "\n";
 
+	// будем считать, что индексация в данных векторах начинается с 1, заполняем нулевой элемент мусором
 	parent.push_back(0);
 	clusterSize.push_back(0);
 
 	int i, j, elem;
-	int counter = 0; //счетчик меток
+	int counter = 0;
 	int left, upper, label_left, label_upper;
 	for (i = 0; i < rows; ++i)
 	{
@@ -86,7 +93,7 @@ void Lattice::setLabels(std::string input, std::string output)
 		{
 			inf >> elem;
 			sitesCur.push_back(elem);
-			
+
 			if (i > 0)
 				upper = labelsPrev[j];
 			else
@@ -96,9 +103,9 @@ void Lattice::setLabels(std::string input, std::string output)
 			else
 				left = 0;
 
+			// если узел занят
 			if (sitesCur[j] != 0)
 			{
-				// если среди ранее просмотренных соседей нет занятых узлов
 				if (left == 0 && upper == 0)
 				{
 					counter++;
@@ -106,21 +113,18 @@ void Lattice::setLabels(std::string input, std::string output)
 					parent.push_back(counter);
 					clusterSize.push_back(1);
 				}
-				// если левый сосед занят и верхний нет
 				else if (left != 0 && upper == 0)
 				{
 					label_left = classify(left);
 					labelsCur.push_back(label_left);
 					clusterSize[label_left]++;
 				}
-				// если верхний сосед занят и левый нет
 				else if (left == 0 && upper != 0)
 				{
 					label_upper = classify(upper);
 					labelsCur.push_back(label_upper);
 					clusterSize[label_upper]++;
 				}
-				// если оба соседа заняты
 				else
 				{
 					merge(left, upper);
@@ -128,6 +132,7 @@ void Lattice::setLabels(std::string input, std::string output)
 				}
 				outf << labelsCur.back() << " ";
 			}
+			// если узел свободен, то просто добавляем 0 к текущему вектору меток
 			else
 			{
 				labelsCur.push_back(0);
@@ -230,7 +235,7 @@ double Lattice::fRand() const
 	return f;
 }
 
-void Lattice::generate(int L, double p, std::string filename, int seed)
+void Lattice::generate(int L, double p, std::string filename)
 {
 	std::ofstream outf(filename);
 	if (!outf)
@@ -240,7 +245,6 @@ void Lattice::generate(int L, double p, std::string filename, int seed)
 	}
 
 	outf << L << " " << L << "\n";
-	srand(seed);
 	int i, j, elem;
 	for (i = 0; i < L; ++i)
 	{
@@ -254,4 +258,77 @@ void Lattice::generate(int L, double p, std::string filename, int seed)
 		}
 		outf << "\n";
 	}
+}
+
+void Lattice::percolation(std::string filename)
+{
+	// векторы, хранящие информацию о протекании
+	// если равно 0 - кластер не встречается на границе
+	// если равно 1 - кластер встречается на одной из границ
+	// если >= 2 - кластер встречается на обоих границах
+	std::vector<int> hor(clusterSize.size(), 0);
+	std::vector<int> ver(clusterSize.size(), 0);
+	// загружаем файл с метками
+	std::ifstream inf(filename);
+	if (!inf)
+	{
+		std::cerr << "Error while opening file" << "\n";
+		exit(1);
+	}
+	int i, j, elem, rows, cols;
+	inf >> rows >> cols;
+	int cluster;
+	for (i = 0; i < rows; ++i)
+	{
+		for (j = 0; j < cols; ++j)
+		{
+			inf >> elem;
+			if (i == 0)
+			{
+				cluster = classify(elem);
+				ver[cluster] = 1;
+			}
+			else if (j == 0)
+			{
+				cluster = classify(elem);
+				hor[cluster] = 1;
+			}
+			else if (i == rows - 1)
+			{
+				cluster = classify(elem);
+				ver[cluster] *= 2;
+			}
+			else if (j == cols - 1)
+			{
+				cluster = classify(elem);
+				hor[cluster] *= 2;
+			}
+		}
+	}
+
+	for (i = 1; i < clusterSize.size(); ++i)
+	{
+		if (hor[i] >= 2)
+		{
+			lhor = true;
+		}
+		if (ver[i] >= 2)
+		{
+			lver = true;
+		}
+	}
+}
+
+void Lattice::clear()
+{
+	rows = 0;
+	cols = 0;
+	sitesPrev.clear();
+	sitesCur.clear();
+	labelsPrev.clear();
+	labelsCur.clear();
+	clusterSize.clear();
+	parent.clear();
+	lhor = false;
+	lver = false;
 }

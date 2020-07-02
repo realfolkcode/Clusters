@@ -4,35 +4,38 @@
 
 class Lattice {
 public:
-	std::vector<int> sitesPrev;
-	std::vector<int> sitesCur;
-	std::vector<int> labelsPrev;
-	std::vector<int> labelsCur;
-	std::vector<int> clusterSize;
-	std::vector<int> pHor;
-	std::vector<int> pVer;
-	// основной алгоритм разбиения на кластеры (расставление меток)
+	std::vector<int> sitesPrev;	// предыдущая строка узлов
+	std::vector<int> sitesCur; // текущая строка узлов
+	std::vector<int> labelsPrev; // предыдущая строка меток
+	std::vector<int> labelsCur;	// текущая строка меток
+	std::vector<int> clusterSize; // размеры кластеров
+	bool lver = false;	// факт протекания по вертикали
+	bool lhor = false;	// факт протекания по горизонтали
+
+	// алгоритм Хошена-Копельмана
 	void setLabels(std::string input, std::string output);
-	// размеры решетки
+	// размер решетки
 	std::pair<int, int> getSize() const;
-	// транспонирование матрицы
+	// транспонирование решетки
 	void transpose(std::string input, std::string output) const;
-	// форматирование текстового файла
+	// форматирование файла в читаемый вид
 	void beautify(std::string filename) const;
-	// генерация случайной решетки с заданной вероятностью
-	void generate(int L, double p, std::string filename, int seed);
+	// генерация решетки с указанной концентрацией
+	void generate(int L, double p, std::string filename);
+	// проверка протекания
+	void percolation(std::string filename);
+	// очищение переменных
+	void clear();
 
 private:
-	int rows = 0;
-	int cols = 0;
-	// дерево меток
-	std::vector<int> parent;
-	// определение номера кластера по метке
+	int rows = 0; // количество строк в решетке
+	int cols = 0; // количество столбцов в решетке
+	std::vector<int> parent; // массив предков для меток
+
+	// восстановление идентификатора кластера
 	int classify(int v);
-	// слияние двух кластеров
+	// объединение двух кластеров по меткам
 	void merge(int a, int b);
-	// генерация случайного double в диапазоне от 0 до 1
+	// генерация случайного числа с плавающей точкой
 	double fRand() const;
-	// находится ли метка на границе
-	void percolation(std::string filename);
 };
