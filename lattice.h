@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <random>
 
 class Lattice {
 public:
@@ -31,11 +32,10 @@ private:
 	int rows = 0; // количество строк в решетке
 	int cols = 0; // количество столбцов в решетке
 	std::vector<int> parent; // массив предков для меток
+	std::random_device rd;
 
 	// восстановление идентификатора кластера
 	int classify(int v);
 	// объединение двух кластеров по меткам
 	void merge(int a, int b);
-	// генерация случайного числа с плавающей точкой
-	double fRand() const;
 };

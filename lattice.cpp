@@ -5,6 +5,8 @@
 #include <iostream>
 #include <algorithm>
 #include <iomanip>
+#include <cmath>
+#include <random>
 
 std::pair<int, int> Lattice::getSize() const
 {
@@ -229,14 +231,10 @@ void Lattice::beautify(std::string filename) const
 	}
 }
 
-double Lattice::fRand() const
-{
-	double f = (double)rand() / RAND_MAX;
-	return f;
-}
-
 void Lattice::generate(int L, double p, std::string filename)
 {
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<> dis(0.0, 1.0);
 	std::ofstream outf(filename);
 	if (!outf)
 	{
@@ -250,7 +248,7 @@ void Lattice::generate(int L, double p, std::string filename)
 	{
 		for (j = 0; j < L; ++j)
 		{
-			if (fRand() < p)
+			if (dis(gen) < p)
 				elem = -1;
 			else
 				elem = 0;

@@ -1,13 +1,11 @@
 #include "lattice.h"
 #include <iostream>
 #include <fstream>
-#include <ctime>
 
 using namespace std;
 
 int main()
 {
-	srand(time(0));
 	int i, j;
 	int L = 100; // размер решетки
 	int G = 10; // количество разбиений
@@ -15,7 +13,7 @@ int main()
 	double delta = 0.02; // шаг концентрации
 	double phor, pver, phv; // вероятности протекания по соответствующим направлениям
 
-	ofstream outf("test.txt"); // результаты будут записаны в данный файл
+	ofstream outf("test2.txt"); // результаты будут записаны в данный файл
 	if (!outf)
 	{
 		std::cerr << "Error while opening file" << "\n";
