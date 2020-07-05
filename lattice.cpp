@@ -8,6 +8,14 @@
 #include <cmath>
 #include <random>
 
+Lattice::Lattice()
+{
+	rows = 0;
+	cols = 0;
+	lver = false;
+	lhor = false;
+}
+
 std::pair<int, int> Lattice::getSize() const
 {
 	return std::make_pair(rows, cols);
@@ -262,10 +270,14 @@ void Lattice::percolation(std::string filename)
 {
 	// векторы, хранящие информацию о протекании
 	// если равно 0 - кластер не встречается на границе
-	// если равно 1 - кластер встречается на одной из границ
-	// если >= 2 - кластер встречается на обоих границах
-	std::vector<int> hor(clusterSize.size(), 0);
-	std::vector<int> ver(clusterSize.size(), 0);
+	// если равно 1 - кластер встречается на границе
+	std::vector<bool> hor[2];
+	std::vector<bool> ver[2];
+	hor[0].resize(clusterSize.size(), false);
+	hor[1].resize(clusterSize.size(), false);
+	ver[0].resize(clusterSize.size(), false);
+	ver[1].resize(clusterSize.size(), false);
+
 	// загружаем файл с метками
 	std::ifstream inf(filename);
 	if (!inf)
@@ -284,33 +296,33 @@ void Lattice::percolation(std::string filename)
 			if (i == 0)
 			{
 				cluster = classify(elem);
-				ver[cluster] = 1;
+				ver[0][cluster] = true;
 			}
-			else if (j == 0)
+			if (j == 0)
 			{
 				cluster = classify(elem);
-				hor[cluster] = 1;
+				hor[0][cluster] = true;
 			}
-			else if (i == rows - 1)
+			if (i == (rows - 1))
 			{
 				cluster = classify(elem);
-				ver[cluster] *= 2;
+				ver[1][cluster] = true;
 			}
-			else if (j == cols - 1)
+			if (j == (cols - 1))
 			{
 				cluster = classify(elem);
-				hor[cluster] *= 2;
+				hor[1][cluster] = true;
 			}
 		}
 	}
 
 	for (i = 1; i < clusterSize.size(); ++i)
 	{
-		if (hor[i] >= 2)
+		if (hor[0][i] && hor[1][i])
 		{
 			lhor = true;
 		}
-		if (ver[i] >= 2)
+		if (ver[0][i] && ver[1][i])
 		{
 			lver = true;
 		}

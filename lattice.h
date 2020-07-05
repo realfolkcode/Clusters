@@ -5,13 +5,14 @@
 
 class Lattice {
 public:
+	Lattice();
 	std::vector<int> sitesPrev;	// предыдуща€ строка узлов
 	std::vector<int> sitesCur; // текуща€ строка узлов
 	std::vector<int> labelsPrev; // предыдуща€ строка меток
 	std::vector<int> labelsCur;	// текуща€ строка меток
 	std::vector<int> clusterSize; // размеры кластеров
-	bool lver = false;	// факт протекани€ по вертикали
-	bool lhor = false;	// факт протекани€ по горизонтали
+	bool lver;	// факт протекани€ по вертикали
+	bool lhor;	// факт протекани€ по горизонтали
 
 	// алгоритм ’ошена- опельмана
 	void setLabels(std::string input, std::string output);
@@ -29,8 +30,8 @@ public:
 	void clear();
 
 private:
-	int rows = 0; // количество строк в решетке
-	int cols = 0; // количество столбцов в решетке
+	int rows; // количество строк в решетке
+	int cols; // количество столбцов в решетке
 	std::vector<int> parent; // массив предков дл€ меток
 	std::random_device rd;
 
