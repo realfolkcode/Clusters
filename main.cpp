@@ -1,61 +1,69 @@
-#include "lattice.h"
+#include "Lattice.h"
 #include <iostream>
 #include <fstream>
+#include <ctime>
 
 using namespace std;
 
 int main()
 {
-	int i, j;
-	int L = 100; // размер решетки
-	int G = 10; // количество разбиений
-	int N = 100; // количество генераций решетки с одной и той же концентрацией
-	double delta = 0.02; // шаг концентрации
-	double phor, pver, phv; // вероятности протекания по соответствующим направлениям
+    int i, j;
+    int L = 100; // СЂР°Р·РјРµСЂ СЂРµС€РµС‚РєРё
+    int G = 10; // РєРѕР»РёС‡РµСЃС‚РІРѕ СЂР°Р·Р±РёРµРЅРёР№
+    int N = 100; // РєРѕР»РёС‡РµСЃС‚РІРѕ РіРµРЅРµСЂР°С†РёР№ СЂРµС€РµС‚РєРё СЃ РѕРґРЅРѕР№ Рё С‚РѕР№ Р¶Рµ РєРѕРЅС†РµРЅС‚СЂР°С†РёРµР№
+    double delta = 0.02; // С€Р°Рі РєРѕРЅС†РµРЅС‚СЂР°С†РёРё
+    double phor, pver, phv; // РІРµСЂРѕСЏС‚РЅРѕСЃС‚Рё РїСЂРѕС‚РµРєР°РЅРёСЏ РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРј РЅР°РїСЂР°РІР»РµРЅРёСЏРј
 
-	ofstream outf("test2.txt"); // результаты будут записаны в данный файл
-	if (!outf)
-	{
-		std::cerr << "Error while opening file" << "\n";
-		exit(1);
-	}
+    std::ios_base::sync_with_stdio(false);
 
-	for (double p = 0.1; p < 1; p = p + delta)
-	{
-		outf << p << "\n";
+    //РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РіРµРЅРµСЂР°С‚РѕСЂ
+    mt19937_state state;
+    mt19937_init_sequence_(&state, (unsigned long long)(time(NULL)));
 
-		for (j = 0; j < G; ++j)
-		{
-			phor = 0;
-			pver = 0;
-			phv = 0;
-			for (i = 0; i < N; ++i)
-			{
-				Lattice lattice;
-				lattice.generate(L, p, "input.txt"); // генерируем решетку
-				lattice.setLabels("input.txt", "output.txt"); // разложение на кластеры
-				// вывод размеров кластеров
-				for (auto elem : lattice.clusterSize)
-				{
-					outf << elem << " ";
-				}
-				outf << "\n";
+    ofstream outf("test4.txt"); // СЂРµР·СѓР»СЊС‚Р°С‚С‹ Р±СѓРґСѓС‚ Р·Р°РїРёСЃР°РЅС‹ РІ РґР°РЅРЅС‹Р№ С„Р°Р№Р»
+    if (!outf)
+    {
+        std::cerr << "Error while opening file" << "\n";
+        exit(1);
+    }
 
-				lattice.percolation("output.txt"); // проверка протекания
-				if (lattice.lhor)
-					phor = phor + 1;
-				if (lattice.lver)
-					pver = pver + 1;
-				if (lattice.lhor && lattice.lver)
-					phv = phv + 1;
-			}
-			// нормируем
-			phor = phor / N;
-			pver = pver / N;
-			phv = phv / N;
-			outf << phor << " " << pver << " " << phv << "\n";
-		}
-	}
-	outf.close();
-	return 0;
+    for (double p = 0.1; p < 1; p = p + delta)
+    {
+        outf << p << "\n";
+
+        for (j = 0; j < G; ++j)
+        {
+            phor = 0;
+            pver = 0;
+            phv = 0;
+            for (i = 0; i < N; ++i)
+            {
+                Lattice lattice;
+                lattice.generate(L, p, "input.txt", state); // РіРµРЅРµСЂРёСЂСѓРµРј СЂРµС€РµС‚РєСѓ
+                lattice.setLabels("input.txt", "output.txt"); // СЂР°Р·Р»РѕР¶РµРЅРёРµ РЅР° РєР»Р°СЃС‚РµСЂС‹
+                // РІС‹РІРѕРґ СЂР°Р·РјРµСЂРѕРІ РєР»Р°СЃС‚РµСЂРѕРІ
+                for (auto elem : lattice.clusterSize)
+                {
+                    if (elem != 0)
+                        outf << elem << " ";
+                }
+                outf << "\n";
+
+                lattice.percolation("output.txt"); // РїСЂРѕРІРµСЂРєР° РїСЂРѕС‚РµРєР°РЅРёСЏ
+                if (lattice.lhor)
+                    phor = phor + 1;
+                if (lattice.lver)
+                    pver = pver + 1;
+                if (lattice.lhor && lattice.lver)
+                    phv = phv + 1;
+            }
+            // РЅРѕСЂРјРёСЂСѓРµРј
+            phor = phor / N;
+            pver = pver / N;
+            phv = phv / N;
+            outf << phor << " " << pver << " " << phv << "\n";
+        }
+    }
+    outf.close();
+    return 0;
 }
